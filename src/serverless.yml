@@ -1,0 +1,70 @@
+service: sls-dd-seeder
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-west-1
+  stage: dev
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - lambda:InvokeAsync
+        - lambda:InvokeFunction
+        - dynamodb:BatchWriteItem
+      Resource:
+        '*'
+        # Fn::Join: ['', [Fn::GetAtt: [ DataBucket, Arn ], '/*'] ]
+
+functions:
+  etl-seeder:
+    handler: etl-seeder.main
+    iamRoleStatementsInherit: true
+    iamRoleStatementsName: etl-seeder
+    iamRoleStatements:
+      - Effect: 'Allow'
+        Action:
+          - dynamodb:Scan
+          - dynamodb:PutItem
+          - dynamodb:BatchWriteItem
+        Resource:
+          - 'arn:aws:dynamodb:*:*:table/sls-dd-seeder-${self:custom.stage}'
+    events:
+      - http:
+          path: data
+          method: get
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  s3Sync:
+    - bucketName: sls-dd-seeder-dev
+      localDir: data
+
+plugins:
+  - serverless-s3-sync
+  - serverless-iam-roles-per-function
+  - seeder-plugin
+
+resources:
+  Resources:
+    DataDynamoDB:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: 'PK'
+            AttributeType: 'S'
+          - AttributeName: 'SK'
+            AttributeType: 'S'
+        KeySchema:
+          - AttributeName: 'PK'
+            KeyType: 'HASH'
+          - AttributeName: 'SK'
+            KeyType: 'RANGE'
+        ProvisionedThroughput:
+          ReadCapacityUnits: '5'
+          WriteCapacityUnits: '5'
+        TableName: 'sls-dd-seeder-${self:custom.stage}'
+    DataBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: 'sls-dd-seeder-${self:custom.stage}'

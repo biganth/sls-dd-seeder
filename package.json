@@ -1,0 +1,30 @@
+{
+  "name": "sls-dd-seeder",
+  "version": "1.0.0",
+  "description": "Serverless deployment that seeds a DynamoDB table with 1,000 user records.",
+  "main": "serverless.yml",
+  "scripts": {
+    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+  },
+  "keywords": [
+    "Serverless",
+    "AWS",
+    "DynamoDB",
+    "Lambda"
+  ],
+  "author": "Anthony DeFreitas",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^1.0.0-rc.7",
+    "@aws-sdk/client-lambda": "^1.0.0-rc.7",
+    "@aws-sdk/client-s3": "^1.0.0-rc.7",
+    "@fast-csv/parse": "^4.3.6",
+    "get-stream": "^6.0.0",
+    "serverless-iam-roles-per-function": "^3.0.1",
+    "serverless-s3-sync": "^1.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.10",
+    "typescript": "^4.1.2"
+  }
+}
